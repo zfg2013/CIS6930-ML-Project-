@@ -1,0 +1,29 @@
+import pandas as pd
+
+# tsv file of the humanbase gene enrichment analysis
+humanbase_genes = pd.read_csv("/Users/tina.salehitorab/Documents/university/spring2022/ml_G/brain_humanbase.tsv", sep= '\t')
+#all of the needed information for the highly expressed genes in the volcano plot
+volcano_gene_values = pd.read_csv("/Users/tina.salehitorab/Documents/university/spring2022/ml_G/pik_brain_humanbase.csv", index_col=0)
+
+# In the rest of the code: a data frame made with columns representing all the gene features(from volcano plot)
+# inorder to use for displaying the graph of connectivity in the Cytoscape framework 
+names = ["M1","M2","M3", "M4","M5","M6"]
+file_new = humanbase_genes.loc[humanbase_genes["GO_VERSION"].isin(names)]['releases/2018-05-14']
+list_tem = []
+group_name = []
+for i in range(len(names)):
+    gene_name = file_new.iloc[i].split(",")
+    list_tem.extend(gene_name)
+    group_name.extend(len(gene_name)*[names[i]])
+m  = pd.DataFrame(list_tem, columns=["Gene_name"])
+m["Group"] = group_name
+m.set_index("Gene_name", inplace=True)
+result = pd.concat([m, volcano_gene_values], axis=1)
+result = result.dropna()
+# result.to_csv("/Users/tina.salehitorab/Documents/university/spring2022/ml_G/volcano_humanbase.csv")
+graph_conn = humanbase_genes.iloc[333:,:3]
+graph_conn.columns = ["Source", "Target", "Weight"]
+graph_conn = graph_conn.loc[graph_conn["Source"].isin(list(result.index))]
+graph_conn = graph_conn.iloc[1:,:]
+graph_conn.set_index("Source", inplace = True)
+# graph_conn.to_csv("/Users/tina.salehitorab/Documents/university/spring2022/ml_G/graph_connection.csv")
